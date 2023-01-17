@@ -1,19 +1,28 @@
 CREATE DATABASE mindfuck_painter;
 
 CREATE TABLE users (
-    `id` int NOT NULL AUTO_INCREMENT,
+    `uuid` varchar(36) NOT NULL,
     `username` varchar(16) NOT NULL,
     `password` varchar(255) NOT NULL,
     `joined` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    PRIMARY KEY (`id`)
+    PRIMARY KEY (`uuid`)
 );
 
 CREATE TABLE sketches (
-    `id` int NOT NULL AUTO_INCREMENT,
+    `uuid` varchar(36) NOT NULL,
     `sender` int NOT NULL,
     `receiver` int NOT NULL,
     `timestamp` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    PRIMARY KEY (`id`),
-    FOREIGN KEY (`sender`) REFERENCES users(`id`)
+    PRIMARY KEY (`uuid`),
+    FOREIGN KEY (`sender`) REFERENCES users(`uuid`)
 );
 
+CREATE TABLE relationships (
+    'user_uuid' varchar(36) NOT NULL,
+    'friend_uuid' varchar(36) NOT NULL,
+    'type' BOOLEAN NOT NULL,
+    'timestamp' TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (`user_uuid`, `friend_uuid`),
+    FOREIGN KEY (`user_uuid`) REFERENCES users(`uuid`),
+    FOREIGN KEY (`friend_uuid`) REFERENCES users(`uuid`),
+);

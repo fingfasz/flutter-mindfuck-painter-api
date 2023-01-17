@@ -1,23 +1,16 @@
 require('dotenv').config();
-var mysql = require('mysql2');
+const Db = require('mysql2-async').default;
 
-env.config();
-
-var con = mysql.createConnection({
-    host: '',
-    user: '',
-    password: ''
+const db = new Db({
+    host: process.env.MYSQL_HOST,
+    user: process.env.MYSQL_USER,
+    password: process.env.MYSQL_PASSW,
+    database: process.env.MYSQL_DATABASE,
+    timezone: ''
 });
 
-async () => {
-    await con.connect((err) => {
-        if(err) {
-            throw err;
-            console.log(err);
-        }
-
-        console.log('connected to database');
-    });
+async function main(){
+    console.log(await db.query("SHOW TABLES;"));
 }
 
-console.log(process.env);
+main();
