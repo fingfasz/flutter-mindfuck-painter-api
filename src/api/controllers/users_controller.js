@@ -1,13 +1,9 @@
 const User = require('../models/user_model');
 
-function createUser(){
+const createUser = async (req, res) => {
+    const { username, password } = req.body;
 
+    const user = await User.create({ username, passowrd });
 }
 
-function loginUser(){
-    
-}
-
-function getUser(){
-    
-}
+module.exports = createUser;

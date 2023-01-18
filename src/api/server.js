@@ -1,6 +1,7 @@
 require('dotenv').config();
 const express = require('express');
 const server = express();
+const usersRouter = require('./routes/users_router');
 
 // const Db = require('mysql2-async').default;
 
@@ -17,3 +18,4 @@ const server = express();
 
 // main();
 
+server.use('/users', usersRouter);
