@@ -25,8 +25,8 @@ const User = db.define(
     }
 );
 
-db.sync()
-    .then(() => console.log('user created'))
+User.sync({ alter: true })
+    .then(() => console.log('users table synced'))
     .catch(err => console.log(`Error: ${err}`));
 
 module.exports = User;
