@@ -20,8 +20,8 @@ const User = db.define(
     },
     {
         timeStamps: true,
-        createdAt: true,
-        updatedAt: true,
+        createdAt: 'created_at',
+        updatedAt: 'updated_at',
     }
 );
 

@@ -1,34 +1,93 @@
 const User = require('../models/user_model');
 const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
 
+// register new user
 const createUser = async (req, res) => {
-    const { username, password } = req.body;
+    try {
+        const { username, password } = req.body;
 
-    if (!username || !password) {
-        res.status(400).send({
-            error: 'Missing fields'
-        });
-    } else {
-        const exists = await User.findOne({
-            where: {
-                username: username
-            }
-        });
-    
-        if (exists) {
+        // check if fields are filled
+        if (!username || !password) {
             res.status(400).send({
-                error: 'Username already exists'
+                message: 'Missing fields'
             });
         } else {
-            const salt = await bcrypt.genSalt(13);
-            const hash = await bcrypt.hash(password, salt);
-    
-            const user = await User.create({ username, password: hash });
-            res.status(201).send({
-                user: user
+            const exists = await User.findOne({
+                where: {
+                    username: username
+                }
             });
+        
+            // check wether user already exists
+            if (exists) {
+                res.status(400).send({
+                    message: 'Username already exists'
+                });
+            } else {
+                const salt = await bcrypt.genSalt(13);
+                const hash = await bcrypt.hash(password, salt);
+        
+                const user = await User.create({ username, password: hash });
+                const newUser = await User.findOne({
+                    where: {
+                        uuid: user.uuid
+                    },
+                    attributes: ['username', 'created_at', 'updated_at']
+                });
+                
+                res.status(201).send({
+                    message: 'User created',
+                    user: newUser
+                });
+            }
         }
+    } catch (err) {
+        return res.status(500).send({
+            message: `Error: ${err}`
+        });
     }
 }
 
-module.exports = createUser;
+// user login
+const loginUser = async (req, res) => {
+    try {
+        const { username, password } = req.body;
+
+        // check if fields are filled
+        if (!username || !password) {
+            res.status(400).send({
+                message: 'Missing fields'            
+            });
+        } else {
+            // check if username is valid
+            const user = await User.findOne({
+                where: {
+                    username: username
+                }
+            });
+
+            // check username and password
+            const compare = await bcrypt.compare(password, user.password);
+            if (!user || !compare){
+                res.status(401).send({
+                    message: 'Incorrect credentials'            
+                });
+            } else {
+                // JWT
+                const token = jwt.sign({ uuid: user.uuid }, process.env.JWT_SECRET);
+
+                res.status(200).send({
+                    message: 'Successfully logged in',
+                    token
+                });
+            }
+        }
+    } catch (err) {
+        return res.status(500).send({
+            message: `Error: ${err}`
+        });
+    }
+}
+
+module.exports = { createUser, loginUser };
