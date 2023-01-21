@@ -43,7 +43,7 @@ const createUser = async (req, res) => {
             }
         }
     } catch (err) {
-        return res.status(500).send({
+        res.status(500).send({
             message: `Error: ${err}`
         });
     }
@@ -75,7 +75,7 @@ const loginUser = async (req, res) => {
                 });
             } else {
                 // JWT
-                const token = jwt.sign({ uuid: user.uuid }, process.env.JWT_SECRET);
+                const token = jwt.sign({ uuid: user.uuid, username: user.username, created_at: user.created_at, updated_at: user.updated_at }, process.env.JWT_SECRET);
 
                 res.status(200).send({
                     message: 'Successfully logged in',
@@ -84,10 +84,33 @@ const loginUser = async (req, res) => {
             }
         }
     } catch (err) {
-        return res.status(500).send({
+        res.status(500).send({
             message: `Error: ${err}`
         });
     }
 }
 
-module.exports = { createUser, loginUser };
+// get user
+const getUser = async (req, res) => {
+    try {
+        // if (!jwt.verify(req.headers.authorization.split(' ')[1], process.env.JWT_SECRET)) {
+        //     res.status(401).send({
+        //         message: 'Unauthorized'
+        //     });
+        // } else {
+        //     const { uuid, username, created_at, updated_at } = jwt.verify(req.headers.authorization.split(' ')[1], process.env.JWT_SECRET);        
+        // }
+
+        const { uuid, username, created_at, updated_at } = jwt.verify(req.headers.authorization.split(' ')[1], process.env.JWT_SECRET);
+
+        res.status(200).send({
+            uuid, username, created_at, updated_at
+        });
+    } catch (err) {
+        res.status(500).send({
+            message: `Error: ${err}`
+        });
+    }
+}
+
+module.exports = { createUser, loginUser, getUser };
