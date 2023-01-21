@@ -5,21 +5,6 @@ const usersRouter = require('./routes/users_router');
 const http = require('http');
 const https = require('https');
 
-// const Db = require('mysql2-async').default;
-
-// const db = new Db({
-//     host: process.env.MYSQL_HOST,
-//     user: process.env.MYSQL_USER,
-//     password: process.env.MYSQL_PASSW,
-//     database: process.env.MYSQL_DATABASE
-// });
-
-// async function main(){
-//     console.log(await db.query("SHOW TABLES;"));
-// }
-
-// main();
-
 server.use(express.json());
 server.use(express.urlencoded({ extended: true}));
 server.use('/users', usersRouter);
