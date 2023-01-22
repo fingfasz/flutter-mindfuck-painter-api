@@ -6,7 +6,7 @@ const http = require('http');
 const https = require('https');
 
 server.use(express.json());
-server.use(express.urlencoded({ extended: true}));
+server.use(express.urlencoded({ extended: true }));
 server.use('/users', usersRouter);
 
 server.listen(process.env.API_PORT, (err) => {

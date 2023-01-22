@@ -93,23 +93,31 @@ const loginUser = async (req, res) => {
 // get user
 const getUser = async (req, res) => {
     try {
-        // if (!jwt.verify(req.headers.authorization.split(' ')[1], process.env.JWT_SECRET)) {
-        //     res.status(401).send({
-        //         message: 'Unauthorized'
-        //     });
-        // } else {
-        //     const { uuid, username, created_at, updated_at } = jwt.verify(req.headers.authorization.split(' ')[1], process.env.JWT_SECRET);        
-        // }
+        // check token
+        if (!req.headers.authorization || !req.headers.authorization.startsWith('Bearer')) {
+            res.status(400).send({
+                message: 'No bearer token'
+            });
+        } else {
+            const { uuid, username, created_at, updated_at } = jwt.verify(req.headers.authorization.split(' ')[1], process.env.JWT_SECRET);
 
-        const { uuid, username, created_at, updated_at } = jwt.verify(req.headers.authorization.split(' ')[1], process.env.JWT_SECRET);
+            // send back userdata
+            res.status(200).send({
+                uuid, username, created_at, updated_at
+            });
+        }
 
-        res.status(200).send({
-            uuid, username, created_at, updated_at
-        });
     } catch (err) {
-        res.status(500).send({
-            message: `Error: ${err}`
-        });
+        // invalid json token
+        if (err.name == 'JsonWebTokenError') {
+            res.status(401).send({
+                message: `Not authorized`
+            });
+        } else {
+            res.status(500).send({
+                message: `Error: ${err}`
+            });
+        }
     }
 }
 
