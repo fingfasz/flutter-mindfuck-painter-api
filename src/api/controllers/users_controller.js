@@ -1,5 +1,6 @@
 const User = require('../models/user_model');
 const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
 const { checkToken } = require('../utils/functions');
 
 // register new user
@@ -94,16 +95,23 @@ const loginUser = async (req, res) => {
 const getUser = async (req, res) => {
     try {
         // check token
-        const token = checkToken(req, res)
+        const token = checkToken(req, res);
+        const paramUUID = req.params.uuid;
+
         if (token.check) {
             const { uuid, username, created_at, updated_at } = token.value;
 
-            // send back user data
-            res.status(200).send({
-                uuid, username, created_at, updated_at
-            });
+            if (uuid != paramUUID) {
+                res.status(400).send({
+                    message: 'Unauthorized'
+                });
+            } else {
+                // send back user data
+                res.status(200).send({
+                    uuid, username, created_at, updated_at
+                });
+            }
         }
-
     } catch (err) {
         res.status(500).send({
             message: `Error: ${err}`

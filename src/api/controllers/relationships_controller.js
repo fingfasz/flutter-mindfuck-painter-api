@@ -76,7 +76,7 @@ const { checkToken } = require('../utils/functions');
 //     }
 // }
 
-const addFriend = async (req, res) => {
+const createRelationship = async (req, res) => {
     const { otherUUID, blocked } = req.body;
 
     try {
@@ -98,13 +98,12 @@ const addFriend = async (req, res) => {
                 });
             
                 // check wether user already exists
-                if (!userExists) {
+                if (!userExists || userExists.uuid == uuid) {
                     res.status(400).send({
                         message: 'Invalid UUID'
                     });
                 } else {
                     // check wether relationship already exists
-                    // todo: if already blocked, then unblock or send back error message
                     const relshipExists = await Relationship.findOne({
                         where: {
                             [Op.and]: {
@@ -114,12 +113,19 @@ const addFriend = async (req, res) => {
                         }
                     });
                 
-                    if (relshipExists) {
-                        res.status(400).send({
-                            message: 'Relationship already exists'
-                        });
+                    if (relshipExists) {                        
+                        if (relshipExists.blocked == blocked) {
+                            res.status(400).send({
+                                message: 'Relationship already exists'
+                            });
+                        } else {
+                            await relshipExists.update({ blocked });
+
+                            res.status(200).send({
+                                relationship: relshipExists
+                            });
+                        }
                     } else {
-                        // create relationship
                         const relationship = await Relationship.create(
                             {
                                 user_uuid: uuid,
@@ -127,9 +133,8 @@ const addFriend = async (req, res) => {
                                 blocked
                             }
                         );
-                            
-                        // send back relationship data
-                        res.status(201).send({ message: 'Relationship created', relationship });
+
+                        res.status(201).send({ relationship });             
                     }
                 }
             }
@@ -141,7 +146,7 @@ const addFriend = async (req, res) => {
     }
 }
 
-const removeFriend = async (req, res) => {
+const removeRelationship = async (req, res) => {
     try {
         const { otherUUID } = req.body;
 
@@ -191,4 +196,34 @@ const removeFriend = async (req, res) => {
     }
 }
 
-module.exports = { addFriend, removeFriend };
+const getRelationships = async (req, res) => {
+    try {
+        // check token
+        const token = checkToken(req, res);
+        const paramUUID = req.params.uuid;
+
+        if (token.check) {
+            const { uuid } = token.value;
+
+            if (uuid != paramUUID) {
+                res.status(400).send({
+                    message: 'Unauthorized'
+                });
+            } else {
+                const relationships = await Relationship.findAll({
+                    where: {
+                        user_uuid: uuid
+                    }
+                });
+
+                res.status(200).send({ relationships });
+            }
+        }
+    } catch (err) {
+        res.status(500).send({
+            message: `Error: ${err}`
+        });
+    }
+}
+
+module.exports = { createRelationship, removeRelationship, getRelationships };
