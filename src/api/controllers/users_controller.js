@@ -1,6 +1,6 @@
 const User = require('../models/user_model');
 const bcrypt = require('bcrypt');
-const jwt = require('jsonwebtoken');
+const { checkToken } = require('../utils/functions');
 
 // register new user
 const createUser = async (req, res) => {
@@ -10,7 +10,7 @@ const createUser = async (req, res) => {
         // check if fields are filled
         if (!username || !password) {
             res.status(400).send({
-                message: 'Missing fields'
+                message: 'Missing data'
             });
         } else {
             const exists = await User.findOne({
@@ -57,7 +57,7 @@ const loginUser = async (req, res) => {
         // check if fields are filled
         if (!username || !password) {
             res.status(400).send({
-                message: 'Missing fields'            
+                message: 'Missing data'            
             });
         } else {
             // check if username is valid
@@ -94,12 +94,9 @@ const loginUser = async (req, res) => {
 const getUser = async (req, res) => {
     try {
         // check token
-        if (!req.headers.authorization || !req.headers.authorization.startsWith('Bearer')) {
-            res.status(400).send({
-                message: 'No bearer token'
-            });
-        } else {
-            const { uuid, username, created_at, updated_at } = jwt.verify(req.headers.authorization.split(' ')[1], process.env.JWT_SECRET);
+        const token = checkToken(req, res)
+        if (token.check) {
+            const { uuid, username, created_at, updated_at } = token.value;
 
             // send back user data
             res.status(200).send({
@@ -108,16 +105,9 @@ const getUser = async (req, res) => {
         }
 
     } catch (err) {
-        // invalid json token
-        if (err.name == 'JsonWebTokenError') {
-            res.status(401).send({
-                message: `Not authorized`
-            });
-        } else {
-            res.status(500).send({
-                message: `Error: ${err}`
-            });
-        }
+        res.status(500).send({
+            message: `Error: ${err}`
+        });        
     }
 }
 

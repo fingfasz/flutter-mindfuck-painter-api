@@ -1,7 +1,7 @@
 const Relationship = require('../models/relationship_model');
 const User = require('../models/user_model');
-const jwt = require('jsonwebtoken');
-const { Op } = require("sequelize");
+const { Op } = require('sequelize');
+const { checkToken } = require('../utils/functions');
 
 // const addFriend = async (req, res) => {
 //     const { otherUUID, blocked } = req.body;
@@ -80,55 +80,60 @@ const addFriend = async (req, res) => {
     const { otherUUID, blocked } = req.body;
 
     try {
-        const token = checkToken(req, res);
-
-        if (token.check == true) {            
-            const { uuid } = token.value;
-
-            // check other uuid
-            const userExists = await User.findOne({
-                where: {
-                    uuid: otherUUID
-                }
+        if (!otherUUID || !blocked) {
+            res.status(400).send({
+                message: 'Missing data'
             });
-        
-            // check wether user already exists
-            if (!userExists) {
-                res.status(400).send({
-                    message: 'Invalid UUID'
-                });
-            } else {
-                // check wether relationship already exists
-                // todo: if already blocked, then unblock or send back error message
-                const relshipExists = await Relationship.findOne({
+        } else {
+            const token = checkToken(req, res);
+
+            if (token.check) {            
+                const { uuid } = token.value;
+
+                // check other uuid
+                const userExists = await User.findOne({
                     where: {
-                        [Op.and]: {
-                            user_uuid: uuid,
-                            other_uuid: otherUUID
-                        }
+                        uuid: otherUUID
                     }
                 });
             
-                if (relshipExists) {
+                // check wether user already exists
+                if (!userExists) {
                     res.status(400).send({
-                        message: 'Relationship already exists'
+                        message: 'Invalid UUID'
                     });
                 } else {
-                    // create relationship
-                    const relationship = await Relationship.create(
-                        {
-                            user_uuid: uuid,
-                            other_uuid: otherUUID,
-                            blocked
+                    // check wether relationship already exists
+                    // todo: if already blocked, then unblock or send back error message
+                    const relshipExists = await Relationship.findOne({
+                        where: {
+                            [Op.and]: {
+                                user_uuid: uuid,
+                                other_uuid: otherUUID
+                            }
                         }
-                    );
-                        
-                    // send back relationship data
-                    res.status(201).send({ message: 'Relationship created', relationship });
+                    });
+                
+                    if (relshipExists) {
+                        res.status(400).send({
+                            message: 'Relationship already exists'
+                        });
+                    } else {
+                        // create relationship
+                        const relationship = await Relationship.create(
+                            {
+                                user_uuid: uuid,
+                                other_uuid: otherUUID,
+                                blocked
+                            }
+                        );
+                            
+                        // send back relationship data
+                        res.status(201).send({ message: 'Relationship created', relationship });
+                    }
                 }
             }
         }
-
     } catch (err) {
         res.status(500).send({
             message: `Error: ${err}`
@@ -138,46 +143,52 @@ const addFriend = async (req, res) => {
 
 const removeFriend = async (req, res) => {
     try {
+        const { otherUUID } = req.body;
 
-    } catch (err) {
+        if (!otherUUID) {
+            res.status(400).send({
+                message: 'Missing data'
+            });
+        } else {
+            const token = checkToken(req, res);
 
-    }
-}
+            if (token.check) {
+                const { uuid } = token.value;
 
-function checkToken(req, res) {
-    // check token
-    if (!req.headers.authorization || !req.headers.authorization.startsWith('Bearer')) {
-        res.status(400).send({
-            message: 'No bearer token'
-        });
-
-        return {
-            check: false
-        };
-    } else {
-        try {
-            const token = jwt.verify(req.headers.authorization.split(' ')[1], process.env.JWT_SECRET)
-
-            return {
-                check: true,
-                value: token
-            };
-        } catch (err) {
-            if (err.name == 'JsonWebTokenError') {
-                res.status(401).send({
-                    message: `Not authorized`
+                const exists = await Relationship.findOne({
+                    where: {
+                        [Op.and]: {
+                            user_uuid: uuid,
+                            other_uuid: otherUUID
+                        }
+                    }
                 });
 
-                return {
-                    check: false
-                };
+                if (!exists) {
+                    res.status(400).send({
+                        message: 'Invalid relationship'
+                    });
+                } else {
+                    await Relationship.destroy({
+                        where: {
+                            [Op.and]: {
+                                user_uuid: uuid,
+                                other_uuid: otherUUID
+                            }
+                        }
+                    });
+    
+                    res.status(200).send({
+                        message: 'Relationship deleted'
+                    });
+                }
             }
         }
-
-        return {
-            value: false
-        };
+    } catch (err) {
+        res.status(500).send({
+            message: `Error: ${err}`
+        });
     }
 }
 
-module.exports = { addFriend };
+module.exports = { addFriend, removeFriend };
