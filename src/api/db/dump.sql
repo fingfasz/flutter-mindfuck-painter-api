@@ -18,6 +18,7 @@ CREATE TABLE sketches (
 );
 
 CREATE TABLE relationships (
+    `uuid` varchar(36) NOT NULL,
     `user_uuid` varchar(36) NOT NULL,
     `friend_uuid` varchar(36) NOT NULL,
     `type` BOOLEAN,

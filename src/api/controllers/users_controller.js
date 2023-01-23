@@ -101,7 +101,7 @@ const getUser = async (req, res) => {
         } else {
             const { uuid, username, created_at, updated_at } = jwt.verify(req.headers.authorization.split(' ')[1], process.env.JWT_SECRET);
 
-            // send back userdata
+            // send back user data
             res.status(200).send({
                 uuid, username, created_at, updated_at
             });
