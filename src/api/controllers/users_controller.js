@@ -85,9 +85,15 @@ const loginUser = async (req, res) => {
             }
         }
     } catch (err) {
-        res.status(500).send({
-            message: `Error: ${err}`
-        });
+        if(err instanceof TypeError){
+            res.status(401).send({
+                message: 'Incorrect credentials'
+            });
+        } else{
+            res.status(500).send({
+                message: `Error: ${err}`
+            });
+        }
     }
 }
 
