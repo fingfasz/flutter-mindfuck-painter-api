@@ -9,7 +9,7 @@ const https = require('https');
 server.use(express.json());
 server.use(express.urlencoded({ extended: true }));
 server.use('/api/users', usersRouter);
-server.use('/api/relationships/', relationshipsRouter);
+server.use('/api/relationships', relationshipsRouter);
 
 server.listen(process.env.API_PORT, (err) => {
     if (err) {
