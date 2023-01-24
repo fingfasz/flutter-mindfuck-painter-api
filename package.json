@@ -1,4 +1,14 @@
 {
+  "name": "flutter-mindfuck-painter-api",
+  "version": "1.0.0",
+  "description": "",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "Unlicense",
   "dependencies": {
     "bcrypt": "^5.1.0",
     "dotenv": "^16.0.3",
