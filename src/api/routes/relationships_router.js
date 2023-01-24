@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { createRelationship, removeRelationship, getRelationships } = require('../controllers/relationships_controller')
 
-router.post('/add', createRelationship);
+router.post('/create', createRelationship);
 router.post('/remove', removeRelationship);
 router.post('/block', createRelationship);
 router.post('/unblock', removeRelationship);
