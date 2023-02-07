@@ -2,9 +2,9 @@
   "name": "flutter-mindfuck-painter-api",
   "version": "1.0.0",
   "description": "",
-  "main": "server.js",
+  "main": "src/api/server.js",
   "scripts": {
-    "start": "node server.js"
+    "start": "node ."
   },
   "keywords": [],
   "author": "",
