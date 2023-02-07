@@ -80,7 +80,8 @@ const loginUser = async (req, res) => {
 
                 res.status(200).send({
                     message: 'Successfully logged in',
-                    token
+                    token,
+                    uuid: user.uuid
                 });
             }
         }
@@ -97,24 +98,31 @@ const loginUser = async (req, res) => {
     }
 }
 
-// get user
-const getUser = async (req, res) => {
+// get by uuid
+const getUserByUUID = async (req, res) => {
     try {
         // check token
         const token = checkToken(req, res);
         const paramUUID = req.params.uuid;
 
         if (token.check) {
-            const { uuid, username, created_at, updated_at } = token.value;
+            // const { uuid, username, created_at, updated_at } = token.value;
 
-            if (uuid != paramUUID) {
+            const user = await User.findOne({
+                where: {
+                    uuid: paramUUID 
+                },
+                attributes: { exclude: ['password'] }
+            });
+
+            if (!user) {
                 res.status(400).send({
-                    message: 'Unauthorized'
+                    message: 'User not found'
                 });
             } else {
                 // send back user data
                 res.status(200).send({
-                    uuid, username, created_at, updated_at
+                    user
                 });
             }
         }
@@ -125,4 +133,40 @@ const getUser = async (req, res) => {
     }
 }
 
-module.exports = { createUser, loginUser, getUser };
+// get user by username
+const getUserByUsername = async (req, res) => {
+    try {
+        // check token
+        const token = checkToken(req, res);
+        const paramUsername = req.params.username;
+
+        if (token.check) {
+            // const { uuid, username, created_at, updated_at } = token.value;
+
+            // send back user data
+            const user = await User.findOne({
+                where: {
+                    username: paramUsername 
+                },
+                attributes: { exclude: ['password'] }
+            });
+            
+            if (!user) {
+                res.status(400).send({
+                    message: 'User not found'
+                });
+            } else {
+                // send back user data
+                res.status(200).send({
+                    user
+                });
+            }
+        }
+    } catch (err) {
+        res.status(500).send({
+            message: `Error: ${err}`
+        });        
+    }
+}
+
+module.exports = { createUser, loginUser, getUserByUUID, getUserByUsername };
