@@ -11,7 +11,7 @@ const createSketch = async (req, res) => {
 
     const sketch = await Sketch.create({ sender_uuid: uuid, receiver_uuid: receiverUUID, bin });
 
-    res.send({ sketch });
+    res.status(201).send({ sketch });
 }
 
 module.exports = { createSketch }
